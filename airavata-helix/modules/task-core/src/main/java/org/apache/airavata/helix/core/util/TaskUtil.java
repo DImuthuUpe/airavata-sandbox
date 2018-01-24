@@ -1,5 +1,6 @@
-package org.apache.airavata.helix.task.api;
+package org.apache.airavata.helix.core.util;
 
+import org.apache.airavata.helix.core.AbstractTask;
 import org.apache.airavata.helix.task.api.annotation.TaskParam;
 
 import java.lang.reflect.Field;

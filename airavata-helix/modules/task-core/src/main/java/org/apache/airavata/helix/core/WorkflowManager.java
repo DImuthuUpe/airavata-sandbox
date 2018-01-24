@@ -1,7 +1,5 @@
 package org.apache.airavata.helix.core;
 
-import org.apache.airavata.helix.task.api.*;
-import org.apache.airavata.helix.task.mkdir.MkdirTask;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
@@ -10,7 +8,6 @@ import org.apache.helix.task.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * TODO: Class level comments please
@@ -24,7 +21,7 @@ public class WorkflowManager {
     private TaskDriver taskDriver;
 
     public static void main(String args[]) throws Exception {
-        WorkflowManager workflowManager = new WorkflowManager("AiravataDemoCluster", "WorkflowManager", "localhost:2199");
+        /*WorkflowManager workflowManager = new WorkflowManager("AiravataDemoCluster", "WorkflowManager", "localhost:2199");
         List<AbstractTask> taskDatas = new ArrayList<>();
         MkdirTask data = new MkdirTask();
         data.setComputeResourceId("Comp 1")
@@ -33,7 +30,7 @@ public class WorkflowManager {
                 .setWorkflowId("workflow 1");
 
         taskDatas.add(data);
-        workflowManager.launchWorkflow(UUID.randomUUID().toString(), taskDatas);
+        workflowManager.launchWorkflow(UUID.randomUUID().toString(), taskDatas);*/
     }
 
     public WorkflowManager(String helixClusterName, String instanceName, String zkConnectionString) throws Exception {
@@ -62,7 +59,7 @@ public class WorkflowManager {
             AbstractTask data = tasks.get(i);
             TaskConfig.Builder taskBuilder = new TaskConfig.Builder().setTaskId("Task_" + data.getTaskId())
                     .setCommand("MkdirTask");
-            Map<String, String> paramMap = org.apache.airavata.helix.task.api.TaskUtil.serializeTaskData(data);
+            Map<String, String> paramMap = org.apache.airavata.helix.core.util.TaskUtil.serializeTaskData(data);
             paramMap.forEach(taskBuilder::addConfig);
 
             List<TaskConfig> taskBuilds = new ArrayList<>();

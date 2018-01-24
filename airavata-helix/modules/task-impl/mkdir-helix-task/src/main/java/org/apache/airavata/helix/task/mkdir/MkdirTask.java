@@ -1,10 +1,13 @@
 package org.apache.airavata.helix.task.mkdir;
 
-import org.apache.airavata.helix.task.api.AbstractTask;
+import org.apache.airavata.helix.core.AbstractTask;
+import org.apache.airavata.helix.core.participant.HelixParticipant;
+import org.apache.airavata.helix.task.api.TaskHelper;
 import org.apache.airavata.helix.task.api.annotation.TaskDef;
 import org.apache.airavata.helix.task.api.annotation.TaskParam;
-import org.apache.helix.task.TaskCallbackContext;
 import org.apache.helix.task.TaskResult;
+
+import java.io.IOException;
 
 /**
  * TODO: Class level comments please
@@ -21,9 +24,16 @@ public class MkdirTask extends AbstractTask {
     @TaskParam(name = "computeResourceId")
     private String computeResourceId;
 
-    public TaskResult onRun() {
+    @Override
+    public TaskResult onRun(TaskHelper helper) {
         System.out.println("Running mkdir task");
-        return new TaskResult(TaskResult.Status.COMPLETED, "Completed");
+        try {
+            helper.getAdaptorSupport().createDirectory(dirName, computeResourceId);
+            return new TaskResult(TaskResult.Status.COMPLETED, "Completed");
+        } catch (Exception e) {
+            publishErrors(e);
+            return new TaskResult(TaskResult.Status.FAILED, e.getMessage());
+        }
     }
 
     public void onCancel() {
@@ -46,5 +56,14 @@ public class MkdirTask extends AbstractTask {
     public MkdirTask setComputeResourceId(String computeResourceId) {
         this.computeResourceId = computeResourceId;
         return this;
+    }
+
+    public static void main(String args[]) {
+        try {
+            HelixParticipant<MkdirTask> participant = new HelixParticipant<>("application.properties", MkdirTask.class);
+            new Thread(participant).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

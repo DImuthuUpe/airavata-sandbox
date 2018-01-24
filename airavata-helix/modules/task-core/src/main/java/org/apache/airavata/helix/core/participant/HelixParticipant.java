@@ -1,5 +1,8 @@
-package org.apache.airavata.helix.task.api;
+package org.apache.airavata.helix.core.participant;
 
+import org.apache.airavata.helix.core.support.TaskHelperImpl;
+import org.apache.airavata.helix.core.AbstractTask;
+import org.apache.airavata.helix.core.util.PropertyResolver;
 import org.apache.airavata.helix.task.api.annotation.TaskDef;
 import org.apache.helix.InstanceType;
 import org.apache.helix.examples.OnlineOfflineStateModelFactory;
@@ -37,7 +40,6 @@ public class HelixParticipant <T extends AbstractTask> implements Runnable {
     private String participantName;
     private ZKHelixManager zkHelixManager;
     private String taskTypeName;
-    private String apiServerUrl;
     private PropertyResolver propertyResolver;
     private Class<T> taskClass;
 
@@ -52,7 +54,6 @@ public class HelixParticipant <T extends AbstractTask> implements Runnable {
         this.clusterName = propertyResolver.get("helix.cluster.name");
         this.participantName = propertyResolver.get("participant.name");
         this.taskTypeName = propertyResolver.get("task.type.name");
-        this.apiServerUrl = propertyResolver.get("api.server.url");
 
         this.taskClass = taskClass;
     }
@@ -63,7 +64,9 @@ public class HelixParticipant <T extends AbstractTask> implements Runnable {
         TaskFactory taskFac = new TaskFactory() {
             public Task createNewTask(TaskCallbackContext context) {
                 try {
-                    return taskClass.newInstance().setCallbackContext(context);
+                    return taskClass.newInstance()
+                            .setCallbackContext(context)
+                            .setTaskHelper(new TaskHelperImpl());
                 } catch (InstantiationException | IllegalAccessException e) {
                     e.printStackTrace();
                     return null;

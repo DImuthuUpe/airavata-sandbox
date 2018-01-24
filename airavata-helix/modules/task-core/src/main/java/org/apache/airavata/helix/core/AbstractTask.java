@@ -1,5 +1,7 @@
-package org.apache.airavata.helix.task.api;
+package org.apache.airavata.helix.core;
 
+import org.apache.airavata.helix.core.util.TaskUtil;
+import org.apache.airavata.helix.task.api.TaskHelper;
 import org.apache.airavata.helix.task.api.annotation.TaskParam;
 import org.apache.helix.HelixManager;
 import org.apache.helix.task.Task;
@@ -25,6 +27,7 @@ public abstract class AbstractTask extends UserContentStore implements Task {
     private String workflowId;
 
     private TaskCallbackContext callbackContext;
+    private TaskHelper taskHelper;
 
     @Override
     public void init(HelixManager manager, String workflowName, String jobName, String taskName) {
@@ -42,7 +45,7 @@ public abstract class AbstractTask extends UserContentStore implements Task {
                 this.callbackContext.getJobConfig().getJobId()
                         .equals(this.callbackContext.getJobConfig().getWorkflow() + "_" + getUserContent(NEXT_JOB, Scope.WORKFLOW));
         if (isThisNextJob) {
-            return onRun();
+            return onRun(this.taskHelper);
         } else {
             return new TaskResult(TaskResult.Status.COMPLETED, "Not a target job");
         }
@@ -53,7 +56,7 @@ public abstract class AbstractTask extends UserContentStore implements Task {
         onCancel();
     }
 
-    public abstract TaskResult onRun();
+    public abstract TaskResult onRun(TaskHelper helper);
 
     public abstract void onCancel();
 
@@ -82,5 +85,19 @@ public abstract class AbstractTask extends UserContentStore implements Task {
     public AbstractTask setCallbackContext(TaskCallbackContext callbackContext) {
         this.callbackContext = callbackContext;
         return this;
+    }
+
+    public TaskHelper getTaskHelper() {
+        return taskHelper;
+    }
+
+    public AbstractTask setTaskHelper(TaskHelper taskHelper) {
+        this.taskHelper = taskHelper;
+        return this;
+    }
+
+    protected void publishErrors(Throwable e) {
+        // TODO Publish through kafka channel with task and workflow id
+        e.printStackTrace();
     }
 }

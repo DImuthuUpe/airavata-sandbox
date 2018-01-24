@@ -12,6 +12,8 @@
         <module>modules/task-impl</module>
         <module>modules/task-api</module>
         <module>modules/task-core</module>
+        <module>modules/agent-api</module>
+        <module>modules/agent-impl</module>
     </modules>
 
     <properties>

@@ -1,6 +1,6 @@
 package org.apache.airavata.helix.core.controller;
 
-import org.apache.airavata.helix.task.api.PropertyResolver;
+import org.apache.airavata.helix.core.util.PropertyResolver;
 import org.apache.helix.controller.HelixControllerMain;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
