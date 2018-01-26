@@ -57,6 +57,28 @@ public abstract class AbstractTask extends UserContentStore implements Task {
 
     public abstract void onCancel();
 
+    protected void publishErrors(Throwable e) {
+        // TODO Publish through kafka channel with task and workflow id
+        e.printStackTrace();
+    }
+
+    public void sendNextJob(String jobId) {
+        putUserContent(WORKFLOW_STARTED, "TRUE", Scope.WORKFLOW);
+        if (jobId != null) {
+            putUserContent(NEXT_JOB, jobId, Scope.WORKFLOW);
+        }
+    }
+
+    protected void setContextVariable(String key, String value) {
+        putUserContent(key, value, Scope.WORKFLOW);
+    }
+
+    protected String getContextVariable(String key) {
+        return getUserContent(key, Scope.WORKFLOW);
+    }
+
+    // Getters and setters
+
     public String getTaskId() {
         return taskId;
     }
@@ -82,17 +104,5 @@ public abstract class AbstractTask extends UserContentStore implements Task {
     public AbstractTask setTaskHelper(TaskHelper taskHelper) {
         this.taskHelper = taskHelper;
         return this;
-    }
-
-    protected void publishErrors(Throwable e) {
-        // TODO Publish through kafka channel with task and workflow id
-        e.printStackTrace();
-    }
-
-    public void sendNextJob(String jobId) {
-        putUserContent(WORKFLOW_STARTED, "TRUE", Scope.WORKFLOW);
-        if (jobId != null) {
-            putUserContent(NEXT_JOB, jobId, Scope.WORKFLOW);
-        }
     }
 }

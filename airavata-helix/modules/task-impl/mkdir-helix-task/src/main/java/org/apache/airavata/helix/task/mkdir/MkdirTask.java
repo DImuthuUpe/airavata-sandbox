@@ -20,16 +20,16 @@ import java.io.IOException;
 @TaskDef(name = "MkdirTask")
 public class MkdirTask extends AbstractTask {
 
-    @TaskParam(name = "directoryName")
+    @TaskParam(name = "Directory Name")
     private String dirName;
 
-    @TaskParam(name = "computeResourceId")
+    @TaskParam(name = "Compute Resource")
     private String computeResourceId;
 
-    @TaskOutPort(name = "Success")
+    @TaskOutPort(name = "Success Port")
     private OutPort successPort;
 
-    @TaskOutPort(name = "Fail")
+    @TaskOutPort(name = "Fail Port")
     private OutPort failOutPort;
 
     @Override

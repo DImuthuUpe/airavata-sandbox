@@ -85,6 +85,7 @@ public class WorkflowManager {
 
         TaskState taskState = taskDriver.pollForWorkflowState(workflow.getName(),
                 TaskState.COMPLETED, TaskState.FAILED, TaskState.STOPPED, TaskState.ABORTED);
+        System.out.println("Workflow finished with state " + taskState.name());
 
     }
 }
