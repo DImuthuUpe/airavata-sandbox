@@ -14,6 +14,7 @@
         <module>modules/task-core</module>
         <module>modules/agent-api</module>
         <module>modules/agent-impl</module>
+        <module>modules/workflow-impl</module>
     </modules>
 
     <properties>

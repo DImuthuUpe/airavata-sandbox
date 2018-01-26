@@ -1,5 +1,10 @@
-package org.apache.airavata.helix.core;
+package org.apache.airavata.helix.workflow;
 
+import org.apache.airavata.helix.core.AbstractTask;
+import org.apache.airavata.helix.core.OutPort;
+import org.apache.airavata.helix.core.util.*;
+import org.apache.airavata.helix.core.util.TaskUtil;
+import org.apache.airavata.helix.task.api.annotation.TaskDef;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
@@ -20,19 +25,6 @@ public class WorkflowManager {
     private static final String WORKFLOW_PREFIX = "Workflow_of_process_";
     private TaskDriver taskDriver;
 
-    public static void main(String args[]) throws Exception {
-        /*WorkflowManager workflowManager = new WorkflowManager("AiravataDemoCluster", "WorkflowManager", "localhost:2199");
-        List<AbstractTask> taskDatas = new ArrayList<>();
-        MkdirTask data = new MkdirTask();
-        data.setComputeResourceId("Comp 1")
-                .setDirName("/tmp")
-                .setTaskId(UUID.randomUUID().toString())
-                .setWorkflowId("workflow 1");
-
-        taskDatas.add(data);
-        workflowManager.launchWorkflow(UUID.randomUUID().toString(), taskDatas);*/
-    }
-
     public WorkflowManager(String helixClusterName, String instanceName, String zkConnectionString) throws Exception {
 
         HelixManager helixManager = HelixManagerFactory.getZKHelixManager(helixClusterName, instanceName,
@@ -51,14 +43,15 @@ public class WorkflowManager {
         taskDriver = new TaskDriver(helixManager);
     }
 
-    private void launchWorkflow(String processId, List<AbstractTask> tasks) throws Exception {
+    public void launchWorkflow(String processId, List<AbstractTask> tasks) throws Exception {
 
         Workflow.Builder workflowBuilder = new Workflow.Builder(WORKFLOW_PREFIX + processId).setExpiry(0);
 
         for (int i = 0; i < tasks.size(); i++) {
             AbstractTask data = tasks.get(i);
+            String taskType = data.getClass().getAnnotation(TaskDef.class).name();
             TaskConfig.Builder taskBuilder = new TaskConfig.Builder().setTaskId("Task_" + data.getTaskId())
-                    .setCommand("MkdirTask");
+                    .setCommand(taskType);
             Map<String, String> paramMap = org.apache.airavata.helix.core.util.TaskUtil.serializeTaskData(data);
             paramMap.forEach(taskBuilder::addConfig);
 
@@ -68,13 +61,17 @@ public class WorkflowManager {
             JobConfig.Builder job = new JobConfig.Builder()
                     .addTaskConfigs(taskBuilds)
                     .setFailureThreshold(0)
-                    .setMaxAttemptsPerTask(3);
-            //.setInstanceGroupTag(data.getTaskType());
+                    .setMaxAttemptsPerTask(3)
+                    .setInstanceGroupTag(taskType);
 
-            workflowBuilder.addJob(("JOB_" + data.getTaskId()), job);
-            if (i > 0) {
-                workflowBuilder.addParentChildDependency("JOB_" + tasks.get(i - 1).getTaskId(), "JOB_" + data.getTaskId()); // get parent job
-            }
+            workflowBuilder.addJob((data.getTaskId()), job);
+
+            List<OutPort> outPorts = TaskUtil.getOutPortsOfTask(data);
+            outPorts.forEach(outPort -> {
+                if (outPort != null) {
+                    workflowBuilder.addParentChildDependency(data.getTaskId(), outPort.getNextJobId());
+                }
+            });
         }
 
         WorkflowConfig.Builder config = new WorkflowConfig.Builder().setFailureThreshold(0);

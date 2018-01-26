@@ -1,6 +1,8 @@
 package org.apache.airavata.helix.core.util;
 
 import org.apache.airavata.helix.core.AbstractTask;
+import org.apache.airavata.helix.core.OutPort;
+import org.apache.airavata.helix.task.api.annotation.TaskOutPort;
 import org.apache.airavata.helix.task.api.annotation.TaskParam;
 
 import java.lang.reflect.Field;
@@ -17,6 +19,20 @@ import java.util.Map;
  */
 public class TaskUtil {
 
+    public static <T extends AbstractTask> List<OutPort> getOutPortsOfTask(T task) throws IllegalAccessException {
+        Field[] fields = task.getClass().getDeclaredFields();
+        List<OutPort> outPorts = new ArrayList<>();
+        for (Field field : fields) {
+            TaskOutPort outPortAnnotation = field.getAnnotation(TaskOutPort.class);
+            if (outPortAnnotation != null) {
+                field.setAccessible(true);
+                OutPort outPort = (OutPort) field.get(task);
+                outPorts.add(outPort);
+            }
+        }
+        return outPorts;
+    }
+
     public static <T extends AbstractTask> Map<String, String> serializeTaskData(T data) throws IllegalAccessException {
 
         Map<String, String> result = new HashMap<>();
@@ -27,6 +43,14 @@ public class TaskUtil {
                 if (parm != null) {
                     classField.setAccessible(true);
                     result.put(parm.name(), classField.get(data).toString());
+                }
+
+                TaskOutPort outPort = classField.getAnnotation(TaskOutPort.class);
+                if (outPort != null) {
+                    classField.setAccessible(true);
+                    if (classField.get(data) != null) {
+                        result.put(outPort.name(), ((OutPort) classField.get(data)).getNextJobId().toString());
+                    }
                 }
             }
         }
@@ -60,6 +84,18 @@ public class TaskUtil {
                     } else if (classField.getType().isAssignableFrom(Boolean.class)) {
                         classField.set(instance, Boolean.parseBoolean(params.get(param.name())));
                     }
+                }
+            }
+        }
+
+        for (Field classField : allFields) {
+            TaskOutPort outPort = classField.getAnnotation(TaskOutPort.class);
+            if (outPort != null) {
+                classField.setAccessible(true);
+                if (params.containsKey(outPort.name())) {
+                    classField.set(instance, new OutPort(params.get(outPort.name()), instance));
+                } else {
+                    classField.set(instance, new OutPort(null, instance));
                 }
             }
         }

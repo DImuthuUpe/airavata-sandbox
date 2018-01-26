@@ -43,7 +43,7 @@ public class HelixParticipant <T extends AbstractTask> implements Runnable {
     private PropertyResolver propertyResolver;
     private Class<T> taskClass;
 
-    public HelixParticipant(String propertyFile, Class<T> taskClass) throws IOException {
+    public HelixParticipant(String propertyFile, Class<T> taskClass, String taskTypeName) throws IOException {
 
         logger.debug("Initializing Participant Node");
 
@@ -53,8 +53,7 @@ public class HelixParticipant <T extends AbstractTask> implements Runnable {
         this.zkAddress = propertyResolver.get("zookeeper.connection.url");
         this.clusterName = propertyResolver.get("helix.cluster.name");
         this.participantName = propertyResolver.get("participant.name");
-        this.taskTypeName = propertyResolver.get("task.type.name");
-
+        this.taskTypeName = taskTypeName;
         this.taskClass = taskClass;
     }
 

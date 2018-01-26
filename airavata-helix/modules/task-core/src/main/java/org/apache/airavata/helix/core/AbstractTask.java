@@ -23,9 +23,6 @@ public abstract class AbstractTask extends UserContentStore implements Task {
     @TaskParam(name = "taskId")
     private String taskId;
 
-    @TaskParam(name = "workflowId")
-    private String workflowId;
-
     private TaskCallbackContext callbackContext;
     private TaskHelper taskHelper;
 
@@ -69,15 +66,6 @@ public abstract class AbstractTask extends UserContentStore implements Task {
         return this;
     }
 
-    public String getWorkflowId() {
-        return workflowId;
-    }
-
-    public AbstractTask setWorkflowId(String workflowId) {
-        this.workflowId = workflowId;
-        return this;
-    }
-
     public TaskCallbackContext getCallbackContext() {
         return callbackContext;
     }
@@ -99,5 +87,12 @@ public abstract class AbstractTask extends UserContentStore implements Task {
     protected void publishErrors(Throwable e) {
         // TODO Publish through kafka channel with task and workflow id
         e.printStackTrace();
+    }
+
+    public void sendNextJob(String jobId) {
+        putUserContent(WORKFLOW_STARTED, "TRUE", Scope.WORKFLOW);
+        if (jobId != null) {
+            putUserContent(NEXT_JOB, jobId, Scope.WORKFLOW);
+        }
     }
 }
